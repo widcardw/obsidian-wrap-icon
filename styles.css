@@ -33,6 +33,17 @@
 .plug-wrap-icon-live-preview {
   white-space: nowrap;
 }
+.plug-wrap-icon-suggestion-icon {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 0.4em;
+  vertical-align: middle;
+}
+.plug-wrap-icon-suggestion-icon .plug-wrap-icon-icon {
+  width: 1em;
+  height: 1em;
+  flex: 0 0 auto;
+}
 .plug-wrap-icon-local-sets {
   display: flex;
   flex-wrap: wrap;

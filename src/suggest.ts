@@ -1,6 +1,6 @@
 import { Editor, EditorPosition, EditorSuggest, EditorSuggestContext, TFile } from 'obsidian'
 import type WrapperIconPlugin from './main'
-import type { IconSet } from './icons'
+import { createIconSvg, findIcon, IconSet } from './icons'
 export interface IconSuggestion {
   fullName: string
 }
@@ -9,7 +9,7 @@ interface IconNameEntry {
   lower: string
 }
 export class IconSuggest extends EditorSuggest<IconSuggestion> {
-  limit = 20
+  limit = 15
   // Pre-built index of every icon name, rebuilt lazily whenever the icon sets
   // array is replaced (load / reload / download / delete). This avoids
   // allocating and lowercasing the full name list on every keystroke.
@@ -30,10 +30,17 @@ export class IconSuggest extends EditorSuggest<IconSuggestion> {
   }
   getSuggestions(context: EditorSuggestContext): IconSuggestion[] {
     const query = context.query.toLowerCase()
-    return this.getEntries()
-      .filter((entry) => entry.lower.includes(query))
-      .slice(0, this.limit)
-      .map((entry) => ({ fullName: entry.fullName }))
+    const entries = this.getEntries()
+    const result: IconSuggestion[] = []
+    // Stop scanning as soon as the limit is reached, instead of filtering the
+    // whole index of icon names on every keystroke.
+    for (const entry of entries) {
+      if (entry.lower.includes(query)) {
+        result.push({ fullName: entry.fullName })
+        if (result.length >= this.limit) break
+      }
+    }
+    return result
   }
   private getEntries(): IconNameEntry[] {
     if (!this.index || this.index.sets !== this.plugin.iconSets) {
@@ -51,7 +58,13 @@ export class IconSuggest extends EditorSuggest<IconSuggestion> {
     return this.index.entries
   }
   renderSuggestion(value: IconSuggestion, el: HTMLElement): void {
-    el.setText(value.fullName)
+    el.empty()
+    const found = findIcon(this.plugin.iconSets, value.fullName)
+    if (found) {
+      const iconEl = el.createSpan({ cls: 'plug-wrap-icon-suggestion-icon' })
+      iconEl.appendChild(createIconSvg(found.icon, found.set))
+    }
+    el.createSpan({ text: value.fullName, cls: 'suggestion-content' })
   }
   selectSuggestion(value: IconSuggestion): void {
     if (!this.context) return
