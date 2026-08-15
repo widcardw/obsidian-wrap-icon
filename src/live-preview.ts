@@ -1,5 +1,6 @@
 import { EditorView, Decoration, ViewPlugin, ViewUpdate, WidgetType } from '@codemirror/view'
 import { RangeSetBuilder } from '@codemirror/state'
+import { syntaxTree } from '@codemirror/language'
 import type WrapperIconPlugin from './main'
 import { createIconSvg, findIcon, IconData, IconSet } from './icons'
 
@@ -84,32 +85,40 @@ class LivePreviewDecorations {
     const ranges = this.view.visibleRanges.length
       ? this.view.visibleRanges
       : [{ from: 0, to: this.view.state.doc.length }]
-    // visibleRanges can be split (e.g. by folded blocks) with a boundary in the
-    // middle of a line; lineAt() then returns the whole line from its start, so
-    // the same icon can be matched again. Skip anything already added.
+    const doc = this.view.state.doc
+    const escapedDelimiter = this.plugin.settings.delimiter.replace(
+      /[.*+?^${}()|[\]\\]/g,
+      '\\$&',
+    )
+    // Match the icon syntax inside a single inline-code node (its text includes
+    // the wrapping backticks after the range is expanded below).
+    const pattern = new RegExp(
+      '^`\\/ico\\s+([^\\s' + escapedDelimiter + '`]+)' + escapedDelimiter + '([^`]*)`$',
+    )
+    // Locate icons through the syntax tree instead of scanning raw text: the
+    // tree knows the real inline-code context, so code blocks, escaped
+    // backticks, etc. are never treated as icons (matching Reading View).
     let lastDecorationEnd = -1
     for (const { from, to } of ranges) {
-      let position = from
-      while (position < to) {
-        const line = this.view.state.doc.lineAt(position)
-        const lineEnd = Math.min(line.to, to)
-        const source = this.view.state.sliceDoc(line.from, lineEnd)
-        const escapedDelimiter = this.plugin.settings.delimiter.replace(
-          /[.*+?^${}()|[\]\\]/g,
-          '\\$&',
-        )
-        const pattern = new RegExp(
-          '`\\/ico\\s+([^\\s' + escapedDelimiter + '`]+)' + escapedDelimiter + '([^`]*)`',
-          'g',
-        )
-        let match: RegExpExecArray | null
-        while ((match = pattern.exec(source))) {
-          const start = line.from + match.index
-          const end = start + match[0].length
-          if (start < lastDecorationEnd) continue
-          if (this.isActiveRange(start, end)) continue
+      syntaxTree(this.view.state).iterate({
+        from,
+        to,
+        enter: (node) => {
+          if (!node.type.name.includes('inline-code')) return
+          // Skip the formatting (backtick) nodes; handle the content node.
+          if (node.type.name.includes('formatting')) return
+          let start = node.from
+          let end = node.to
+          // The inline-code content node excludes the backticks; include them
+          // so the full `` `/ico ...` `` source is matched.
+          if (start > 0 && doc.sliceString(start - 1, start) === '`') start--
+          if (end < doc.length && doc.sliceString(end, end + 1) === '`') end++
+          if (start < lastDecorationEnd) return
+          const match = pattern.exec(doc.sliceString(start, end))
+          if (!match) return
+          if (this.isActiveRange(start, end)) return
           const found = findIcon(this.plugin.iconSets, match[1] || '')
-          if (!found) continue
+          if (!found) return
           builder.add(
             start,
             end,
@@ -129,9 +138,8 @@ class LivePreviewDecorations {
             }),
           )
           lastDecorationEnd = end
-        }
-        position = line.to + 1
-      }
+        },
+      })
     }
     this.decorations = builder.finish()
   }
