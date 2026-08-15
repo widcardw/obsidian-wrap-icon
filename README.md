@@ -3,19 +3,19 @@
 Render [Iconify](https://iconify.design/) icons with custom inline text in your notes, using locally downloaded icon sets — no internet connection needed once the icons are saved.
 
 ```
-`ico mdi:home;Home`
+`/ico mdi:home;Home`
 ```
 
 is rendered as an inline **Home** label with the `mdi:home` icon in front of it. The icon is fetched from a local Iconify JSON file and wrapped together with your text, so both stay on one line.
 
 ## Features
 
-- **Inline icon + text wrapper** — write `` `ico <set>:<icon>;<text>` `` in any note and it renders as a single inline element.
+- **Inline icon + text wrapper** — write `` `/ico <set>:<icon>;<text>` `` in any note and it renders as a single inline element.
 - **Fully offline** — icons are stored as local JSON files inside the plugin folder. Nothing is fetched from the network while reading or editing.
 - **Icon set downloader** — search Iconify collections from the settings tab or a command and download them as offline JSON.
 - **Live Preview support** — icons render directly in the editor; click one to jump back to the source and edit it.
 - **Reading View support** — icons also render in Reading View via a Markdown post-processor.
-- **Autocomplete** — start typing `` `ico `` and the plugin suggests icons from your downloaded sets.
+- **Autocomplete** — start typing `` `/ico `` and the plugin suggests icons from your downloaded sets.
 - **Customizable delimiter** — choose the separator between the icon name and the text (default `;`).
 
 ## Installation
@@ -33,7 +33,7 @@ Then enable **Wrapper Icon** in **Settings → Community plugins**.
 Use the icon inside a code span with this syntax:
 
 ```
-`ico <icon-set>:<icon-name><delimiter><text>`
+`/ico <icon-set>:<icon-name><delimiter><text>`
 ```
 
 - `<icon-set>` — the Iconify collection prefix (e.g. `mdi`, `lucide`, `ph`).
@@ -44,9 +44,9 @@ Use the icon inside a code span with this syntax:
 Examples:
 
 ```
-`ico mdi:home;Home`
-`ico lucide:user;Profile`
-`ico ph:check-circle`
+`/ico mdi:home;Home`
+`/ico lucide:user;Profile`
+`/ico ph:check-circle`
 ```
 
 > ⚠️ The `<icon-set>:<icon-name>` prefix is required — the plugin only renders icons that are present in your locally downloaded sets.
@@ -54,8 +54,8 @@ Examples:
 ### In the editor
 
 - **Live Preview**: icons are rendered inline as you type. Click a rendered icon to select and edit its source.
-- **Source mode**: write the raw `` `ico ...` `` text.
-- **Autocomplete**: type `` `ico `` and pick an icon from the suggestion popup; the delimiter is inserted automatically.
+- **Source mode**: write the raw `` `/ico ...` `` text.
+- **Autocomplete**: type `` `/ico `` and pick an icon from the suggestion popup; the delimiter is inserted automatically.
 
 ## Getting started: download an icon set
 

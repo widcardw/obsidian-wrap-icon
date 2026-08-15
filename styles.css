@@ -17,8 +17,11 @@
   width: 1.1em;
   height: 1.1em;
   fill: currentColor;
-  /* Centers the icon on the text x-height midline (baseline + x-height/2). */
-  vertical-align: middle;
+  /* Icon bottom sits 0.25em below the text baseline, which puts the icon
+     center ~0.30em above it — the line-box center that flex align-items:center
+     would use (slightly higher than vertical-align:middle's x-height midline).
+     Decrease the magnitude (e.g. -0.2em) to raise the icon further. */
+  vertical-align: -0.2em;
 }
 .plug-wrap-icon-text {
   display: inline-block;
@@ -45,8 +48,6 @@
 }
 .plug-wrap-icon-local-path {
   color: var(--text-muted);
-  font-family: var(--font-monospace);
-  font-size: var(--font-smaller);
   overflow: hidden;
   text-overflow: ellipsis;
   cursor: pointer;
@@ -56,13 +57,12 @@
   padding: 0.75em;
   user-select: text;
   overflow-wrap: anywhere;
-  font-family: var(--font-monospace);
   background: var(--background-secondary);
   border-radius: 6px;
 }
 .plug-wrap-icon-collection-results {
-  max-height: 18em;
-  height: 18em;
+  max-height: 12em;
+  height: 12em;
   overflow: auto;
   border: 1px solid var(--background-modifier-border);
   border-radius: 6px;

@@ -62,11 +62,11 @@ export class DownloaderModal extends Modal {
     if (!this.plugin.iconSets.length) local.createSpan({ text: ' None yet.' })
     for (const set of this.plugin.iconSets) {
       const row = local.createDiv({ cls: 'plug-wrap-icon-local-set' })
-      row.createSpan({ text: `${set.prefix} (${Object.keys(set.icons).length})` })
       const pathEl = row.createSpan({
         cls: 'plug-wrap-icon-local-path',
-        text: 'assets/' + set.prefix + '.json',
+        text: set.prefix,
       })
+      row.createSpan({ text: `(${Object.keys(set.icons).length})` })
       pathEl.addEventListener('click', () =>
         new IconPathModal(
           this.plugin.app,

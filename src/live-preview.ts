@@ -33,13 +33,14 @@ class InlineIconWidget extends WidgetType {
     return false
   }
   eq(widget: WidgetType): boolean {
+    // Compare content only, not source positions: the source coordinates shift
+    // whenever text before an icon is edited, and treating that as a change
+    // would tear down and rebuild every widget on each keystroke.
     return (
       widget instanceof InlineIconWidget &&
       widget.icon.body === this.icon.body &&
       widget.set.prefix === this.set.prefix &&
-      widget.text === this.text &&
-      widget.sourceFrom === this.sourceFrom &&
-      widget.sourceTo === this.sourceTo
+      widget.text === this.text
     )
   }
 }
@@ -68,7 +69,14 @@ class LivePreviewDecorations {
       this.editingRange = null
     }
     if (update.docChanged || update.viewportChanged || update.selectionSet) {
-      this.rebuild()
+      try {
+        this.rebuild()
+      } catch (error) {
+        // Never let a rebuild failure propagate: CodeMirror would deactivate
+        // the whole plugin and every widget would disappear permanently.
+        console.error('Wrapper Icon: failed to rebuild decorations', error)
+        this.decorations = Decoration.none
+      }
     }
   }
   rebuild(): void {
@@ -76,6 +84,10 @@ class LivePreviewDecorations {
     const ranges = this.view.visibleRanges.length
       ? this.view.visibleRanges
       : [{ from: 0, to: this.view.state.doc.length }]
+    // visibleRanges can be split (e.g. by folded blocks) with a boundary in the
+    // middle of a line; lineAt() then returns the whole line from its start, so
+    // the same icon can be matched again. Skip anything already added.
+    let lastDecorationEnd = -1
     for (const { from, to } of ranges) {
       let position = from
       while (position < to) {
@@ -94,6 +106,7 @@ class LivePreviewDecorations {
         while ((match = pattern.exec(source))) {
           const start = line.from + match.index
           const end = start + match[0].length
+          if (start < lastDecorationEnd) continue
           if (this.isActiveRange(start, end)) continue
           const found = findIcon(this.plugin.iconSets, match[1] || '')
           if (!found) continue
@@ -115,6 +128,7 @@ class LivePreviewDecorations {
               inclusive: false,
             }),
           )
+          lastDecorationEnd = end
         }
         position = line.to + 1
       }
@@ -124,11 +138,11 @@ class LivePreviewDecorations {
   private isActiveRange(start: number, end: number): boolean {
     if (this.editingRange?.from === start && this.editingRange.to === end) return true
     for (const range of this.view.state.selection.ranges) {
-      if (range.from === range.to) {
-        if (range.from > start && range.from < end) return true
-      } else if (range.from < end && range.to > start) {
-        return true
-      }
+      // Only a collapsed cursor inside the icon source counts as editing it.
+      // A non-collapsed selection overlapping the icon keeps the widget
+      // visible (matching CodeMirror's default behavior for replace
+      // decorations), otherwise selecting text makes icons vanish.
+      if (range.from === range.to && range.from > start && range.from < end) return true
     }
     return false
   }
