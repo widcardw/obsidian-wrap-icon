@@ -1,0 +1,75 @@
+.plug-wrap-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  vertical-align: middle;
+}
+.plug-wrap-icon-icon {
+  display: inline-block;
+  width: 1.1em;
+  height: 1.1em;
+  fill: currentColor;
+  flex: 0 0 auto;
+}
+.plug-wrap-icon-text {
+  display: inline-block;
+}
+.plug-wrap-icon-live-preview {
+  white-space: nowrap;
+}
+.plug-wrap-icon-local-sets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35em;
+  margin: 0.75em 0;
+}
+.plug-wrap-icon-local-set {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.5em;
+  width: 100%;
+}
+.plug-wrap-icon-local-path {
+  color: var(--text-muted);
+  font-family: var(--font-monospace);
+  font-size: var(--font-smaller);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.plug-wrap-icon-local-path {
+  cursor: pointer;
+  text-decoration: underline dotted;
+}
+.plug-wrap-icon-path-value {
+  padding: 0.75em;
+  user-select: text;
+  overflow-wrap: anywhere;
+  font-family: var(--font-monospace);
+  background: var(--background-secondary);
+  border-radius: 6px;
+}
+.plug-wrap-icon-collection-results {
+  max-height: 18em;
+  overflow: auto;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+}
+.plug-wrap-icon-collection-row {
+  cursor: pointer;
+  padding: 0.45em 0.65em;
+}
+.plug-wrap-icon-collection-row:hover,
+.plug-wrap-icon-collection-row.is-selected {
+  background: var(--background-modifier-hover);
+}
+.plug-wrap-icon-download-status {
+  color: var(--text-muted);
+  margin: 0.35em 0;
+}
+.modal:has(.plug-wrap-icon-collection-results) {
+  min-height: 560px;
+}
+.plug-wrap-icon-collection-results {
+  height: 18em;
+}
