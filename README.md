@@ -1,92 +1,123 @@
-# Obsidian Sample Plugin
+# Wrapper Icon
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+Render [Iconify](https://iconify.design/) icons with custom inline text in your notes, using locally downloaded icon sets — no internet connection needed once the icons are saved.
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+```
+`ico mdi:home;Home`
+```
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
+is rendered as an inline **Home** label with the `mdi:home` icon in front of it. The icon is fetched from a local Iconify JSON file and wrapped together with your text, so both stay on one line.
 
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open modal (simple)" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and outputs a Notice on click.
-- Registers a global interval which logs 'setInterval' to the console.
+## Features
 
-## First time developing plugins?
+- **Inline icon + text wrapper** — write `` `ico <set>:<icon>;<text>` `` in any note and it renders as a single inline element.
+- **Fully offline** — icons are stored as local JSON files inside the plugin folder. Nothing is fetched from the network while reading or editing.
+- **Icon set downloader** — search Iconify collections from the settings tab or a command and download them as offline JSON.
+- **Live Preview support** — icons render directly in the editor; click one to jump back to the source and edit it.
+- **Reading View support** — icons also render in Reading View via a Markdown post-processor.
+- **Autocomplete** — start typing `` `ico `` and the plugin suggests icons from your downloaded sets.
+- **Customizable delimiter** — choose the separator between the icon name and the text (default `;`).
 
-Quick starting guide for new plugin devs:
+## Installation
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `src/main.ts` to `main.js`.
-- Make changes to `src/main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+Copy `main.js`, `manifest.json`, and `styles.css` to your vault:
 
-## Releasing new releases
+```
+<VaultFolder>/.obsidian/plugins/wrapper-icon/
+```
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+Then enable **Wrapper Icon** in **Settings → Community plugins**.
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+## Usage
 
-## Adding your plugin to the community plugin list
+Use the icon inside a code span with this syntax:
 
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+```
+`ico <icon-set>:<icon-name><delimiter><text>`
+```
 
-## How to use
+- `<icon-set>` — the Iconify collection prefix (e.g. `mdi`, `lucide`, `ph`).
+- `<icon-name>` — an icon name from that collection.
+- `<delimiter>` — the separator character, `;` by default (configurable in settings).
+- `<text>` — the text shown next to the icon. Can be empty to show only the icon.
 
-- Clone this repo.
-- Make sure your NodeJS is at least v18 (`node --version`).
-- `npm i` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
+Examples:
 
-## Manually installing the plugin
+```
+`ico mdi:home;Home`
+`ico lucide:user;Profile`
+`ico ph:check-circle`
+```
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+> ⚠️ The `<icon-set>:<icon-name>` prefix is required — the plugin only renders icons that are present in your locally downloaded sets.
 
-## Improve code quality with eslint
+### In the editor
 
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code.
-- This project already has eslint preconfigured, you can invoke a check by running`npm run lint`
-- Together with a custom eslint [plugin](https://github.com/obsidianmd/eslint-plugin) for Obsidan specific code guidelines.
-- A GitHub action is preconfigured to automatically lint every commit on all branches.
+- **Live Preview**: icons are rendered inline as you type. Click a rendered icon to select and edit its source.
+- **Source mode**: write the raw `` `ico ...` `` text.
+- **Autocomplete**: type `` `ico `` and pick an icon from the suggestion popup; the delimiter is inserted automatically.
 
-## Funding URL
+## Getting started: download an icon set
 
-You can include funding URLs where people who use your plugin can financially support it.
+Icon sets are downloaded from the official `@iconify-json` packages (via jsDelivr, falling back to unpkg). This is the only step that needs a network connection.
 
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
+1. Run the command **Download iconify icon set**, or go to **Settings → Wrapper Icon → Download icon set**.
+2. Search for a collection (by name or prefix), e.g. `Material Design Icons`.
+3. Select the collection. Optionally enter a comma-separated list of icon names (leave empty to download the whole collection — some collections are large).
+4. Click **Download selected collection**.
 
-```json
-{
-	"fundingUrl": "https://buymeacoffee.com"
+The set is saved to `.obsidian/plugins/wrapper-icon/assets/<prefix>.json` and is available immediately, offline.
+
+To add icons to an already downloaded set, delete the set from the downloader (or the assets folder) and download it again.
+
+## Settings
+
+| Setting | Description |
+| --- | --- |
+| Delimiter | The character between the icon name and the custom text (default `;`). |
+| Download icon set | Opens the Iconify collection downloader. |
+| Edit styles.css | Opens the plugin stylesheet (desktop only) so you can customize icon size, color, and layout. |
+
+## Commands
+
+| Command | Description |
+| --- | --- |
+| Reload local icon sets | Re-reads the JSON files in `assets/`, picking up sets added or changed manually. |
+| Download iconify icon set | Opens the collection downloader. |
+
+## Customizing the style
+
+By default each wrapper is drawn with a thin dashed outline (`0.5px dashed`, `0.25rem` radius) and the icon uses `currentColor`, sized relative to the surrounding text. To change this, edit `styles.css` (button in settings) or add your own CSS targeting the `.plug-wrap-icon` / `.plug-wrap-icon-icon` classes, e.g. to remove the outline and recolor/resize the icon:
+
+```css
+.plug-wrap-icon {
+  border: none;
+  padding: 0;
+}
+.plug-wrap-icon-icon {
+  color: var(--text-accent);
+  width: 1.4em;
+  height: 1.4em;
 }
 ```
 
-If you have multiple URLs, you can also do:
+## Development
 
-```json
-{
-	"fundingUrl": {
-		"Buy Me a Coffee": "https://buymeacoffee.com",
-		"GitHub Sponsor": "https://github.com/sponsors",
-		"Patreon": "https://www.patreon.com/"
-	}
-}
+This plugin is built with TypeScript and esbuild. Requires Node.js 18+.
+
+```bash
+npm install       # install dependencies
+npm run dev       # compile in watch mode
+npm run build     # type-check (tsc) and produce a production build in main.js
+npm run lint      # ESLint check
+npm run format    # format source files with oxfmt
 ```
 
-## API Documentation
+## Release
 
-See https://docs.obsidian.md
+- Bump the version in `manifest.json` (SemVer) and `versions.json`, or run `npm version patch|minor|major`.
+- Create a GitHub release tagged with the exact version (no leading `v`) and attach `main.js`, `manifest.json`, and `styles.css`.
+
+## License
+
+[MIT](./LICENSE)

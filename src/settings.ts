@@ -27,7 +27,7 @@ export class WrapperIconSettingTab extends PluginSettingTab {
       )
     new Setting(containerEl)
       .setName('Download icon set')
-      .setDesc('Download Iconify icons for offline use.')
+      .setDesc('Download iconify icons for offline use.')
       .addButton((button) =>
         button
           .setButtonText('Open downloader')

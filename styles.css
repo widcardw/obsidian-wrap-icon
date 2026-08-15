@@ -1,7 +1,15 @@
 .plug-wrap-icon {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35em;
+  display: inline-block;
+  /* Baseline is derived from the text inside, so the label's baseline matches
+     the surrounding text exactly (vertical-align: middle on the container would
+     center the whole line-height box instead and shift the baseline). */
+  vertical-align: baseline;
+  border: 0.5px dashed var(--text-muted);
+  border-radius: 0.25rem;
+  padding: 0em 0.35em 0.1em 0.35em;
+}
+/* Icon-only wrappers have no text baseline, so fall back to centering. */
+.plug-wrap-icon:has(.plug-wrap-icon-text:empty) {
   vertical-align: middle;
 }
 .plug-wrap-icon-icon {
@@ -9,10 +17,15 @@
   width: 1.1em;
   height: 1.1em;
   fill: currentColor;
-  flex: 0 0 auto;
+  /* Centers the icon on the text x-height midline (baseline + x-height/2). */
+  vertical-align: middle;
 }
 .plug-wrap-icon-text {
   display: inline-block;
+  margin-left: 0.35em;
+}
+.plug-wrap-icon-text:empty {
+  margin-left: 0;
 }
 .plug-wrap-icon-live-preview {
   white-space: nowrap;
@@ -36,8 +49,6 @@
   font-size: var(--font-smaller);
   overflow: hidden;
   text-overflow: ellipsis;
-}
-.plug-wrap-icon-local-path {
   cursor: pointer;
   text-decoration: underline dotted;
 }
@@ -51,6 +62,7 @@
 }
 .plug-wrap-icon-collection-results {
   max-height: 18em;
+  height: 18em;
   overflow: auto;
   border: 1px solid var(--background-modifier-border);
   border-radius: 6px;
@@ -69,7 +81,4 @@
 }
 .modal:has(.plug-wrap-icon-collection-results) {
   min-height: 560px;
-}
-.plug-wrap-icon-collection-results {
-  height: 18em;
 }

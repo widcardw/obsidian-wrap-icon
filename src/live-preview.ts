@@ -15,7 +15,7 @@ class InlineIconWidget extends WidgetType {
     super()
   }
   toDOM(view: EditorView): HTMLElement {
-    const wrapper = document.createElement('span')
+    const wrapper = createSpan()
     wrapper.className = 'plug-wrap-icon plug-wrap-icon-live-preview'
     wrapper.addEventListener('mousedown', (event) => {
       event.preventDefault()
@@ -23,7 +23,7 @@ class InlineIconWidget extends WidgetType {
       view.dispatch({ selection: { anchor: this.sourceFrom, head: this.sourceTo } })
     })
     wrapper.appendChild(createIconSvg(this.icon, this.set))
-    const label = document.createElement('span')
+    const label = createSpan()
     label.className = 'plug-wrap-icon-text'
     label.textContent = this.text
     wrapper.appendChild(label)

@@ -28,7 +28,7 @@ export default class WrapperIconPlugin extends Plugin {
     })
     this.addCommand({
       id: 'download-icon-set',
-      name: 'Download Iconify icon set',
+      name: 'Download iconify icon set',
       callback: () => this.openDownloader(),
     })
   }
@@ -48,15 +48,12 @@ export default class WrapperIconPlugin extends Plugin {
     }
     const cssPath = `${adapter.getBasePath()}/${this.app.vault.configDir}/plugins/${this.manifest.id}/styles.css`
     try {
-      const electron = (
-        globalThis as typeof globalThis & {
-          require?: (moduleName: string) => {
-            shell?: { openPath?: (path: string) => Promise<string> }
-          }
-        }
-      ).require
-      if (!electron) throw new Error('Electron is unavailable')
-      const result = await electron('electron').shell?.openPath?.(cssPath)
+      const requireFn = (window as unknown as { require?: (id: string) => unknown }).require
+      if (!requireFn) throw new Error('Electron is unavailable')
+      const electronModule = requireFn('electron') as {
+        shell?: { openPath?: (path: string) => Promise<string> }
+      }
+      const result = await electronModule.shell?.openPath?.(cssPath)
       if (result) throw new Error(result)
     } catch {
       new Notice(`Could not open styles.css. Path: ${cssPath}`)
@@ -71,10 +68,10 @@ export default class WrapperIconPlugin extends Plugin {
       if (!match) continue
       const found = findIcon(this.iconSets, match[1] || '')
       if (!found) continue
-      const wrapper = document.createElement('span')
+      const wrapper = createSpan()
       wrapper.className = 'plug-wrap-icon'
       wrapper.appendChild(createIconSvg(found.icon, found.set))
-      const text = document.createElement('span')
+      const text = createSpan()
       text.className = 'plug-wrap-icon-text'
       text.textContent = match[2] || ''
       wrapper.appendChild(text)

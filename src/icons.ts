@@ -1,4 +1,4 @@
-import { App, Notice, requestUrl } from 'obsidian'
+import { App, FileSystemAdapter, Notice, requestUrl } from 'obsidian'
 
 export interface IconData {
   body: string
@@ -75,8 +75,8 @@ export function getIconSetPath(app: App, prefix: string): string {
   return pluginAssetsPath(app, `${prefix}.json`)
 }
 export function getIconSetDisplayPath(app: App, prefix: string): string {
-  const adapter = app.vault.adapter
-  if ('getBasePath' in adapter && typeof adapter.getBasePath === 'function')
+  const adapter = app.vault.adapter as FileSystemAdapter
+  if (typeof adapter.getBasePath === 'function')
     return `${adapter.getBasePath()}/${getPluginFolderPath(app)}/${assetsFolder}/${prefix}.json`
   return getIconSetPath(app, prefix)
 }
@@ -175,7 +175,7 @@ function resolveAliases(
   return resolved
 }
 export function createIconSvg(icon: IconData, set: IconSet): SVGElement {
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+  const svg = createSvg('svg')
   const width = icon.width || set.width || 24
   const height = icon.height || set.height || 24
   svg.setAttribute('viewBox', `0 0 ${width} ${height}`)

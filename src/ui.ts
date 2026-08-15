@@ -53,13 +53,13 @@ export class DownloaderModal extends Modal {
   onOpen(): void {
     const { contentEl } = this
     contentEl.empty()
-    new Setting(contentEl).setName('Download Iconify icons').setHeading()
+    new Setting(contentEl).setName('Download iconify icons').setHeading()
     contentEl.createEl('p', {
       text: 'Search by collection name or prefix, then select a result. Collections are downloaded from @iconify-json.',
     })
     const local = contentEl.createDiv({ cls: 'plug-wrap-icon-local-sets' })
     local.createEl('strong', { text: 'Downloaded collections' })
-    if (!this.plugin.iconSets.length) local.createEl('span', { text: ' None yet.' })
+    if (!this.plugin.iconSets.length) local.createSpan({ text: ' None yet.' })
     for (const set of this.plugin.iconSets) {
       const row = local.createDiv({ cls: 'plug-wrap-icon-local-set' })
       row.createSpan({ text: `${set.prefix} (${Object.keys(set.icons).length})` })
@@ -82,7 +82,7 @@ export class DownloaderModal extends Modal {
       })
     }
     new Setting(contentEl).setName('Search collections').addText((text) =>
-      text.setPlaceholder('Material Design Icons').onChange((value) => {
+      text.setPlaceholder('Material design icons').onChange((value) => {
         this.query = value
         if (this.searchTimer !== undefined) window.clearTimeout(this.searchTimer)
         this.searchTimer = window.setTimeout(() => {
@@ -98,7 +98,7 @@ export class DownloaderModal extends Modal {
         'Optional comma-separated names. Leave empty to download the whole selected collection.',
       )
       .addText((text) =>
-        text.setPlaceholder('home,account').onChange((value) => {
+        text.setPlaceholder('Home,account').onChange((value) => {
           this.icons = value
         }),
       )
@@ -128,7 +128,7 @@ export class DownloaderModal extends Modal {
 
   private async refreshResults(): Promise<void> {
     if (!this.resultsEl) return
-    this.statusEl.setText('Searching Iconify collections…')
+    this.statusEl.setText('Searching iconify collections…')
     this.resultsEl.empty()
     try {
       const results = (await searchCollections(this.query)).slice(0, 30)
@@ -136,7 +136,7 @@ export class DownloaderModal extends Modal {
       for (const collection of results) {
         const row = this.resultsEl.createDiv({ cls: 'plug-wrap-icon-collection-row' })
         row.createEl('strong', { text: collection.name })
-        row.createEl('span', {
+        row.createSpan({
           text: ` ${collection.prefix}${collection.total ? ` · ${collection.total} icons` : ''}`,
         })
         row.addEventListener('click', () => {

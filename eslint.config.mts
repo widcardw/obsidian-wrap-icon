@@ -6,13 +6,13 @@ export default defineConfig(
 	globalIgnores([
 		'node_modules',
 		'dist',
-		'esbuild.config.mjs',
-		'version-bump.mjs',
 		'versions.json',
 		'main.js',
 		'package.json',
 		'package-lock.json',
 		'tsconfig.json',
+		'**/*.js',
+		'**/*.json',
 	]),
 	{
 		languageOptions: {
@@ -21,12 +21,23 @@ export default defineConfig(
 			},
 			parserOptions: {
 				projectService: {
-					allowDefaultProject: ['eslint.config.mts', 'manifest.json'],
+					allowDefaultProject: ['eslint.config.mts', 'esbuild.config.mjs', 'version-bump.mjs'],
 				},
 				tsconfigRootDir: import.meta.dirname,
-				extraFileExtensions: ['.json'],
 			},
 		},
 	},
 	...obsidianmd.configs.recommended,
+	{
+		files: ['esbuild.config.mjs', 'version-bump.mjs'],
+		languageOptions: {
+			globals: {
+				...globals.node,
+			},
+		},
+		rules: {
+			// Build/release scripts run with Node, never bundled into the plugin.
+			'obsidianmd/no-nodejs-modules': 'off',
+		},
+	},
 );
