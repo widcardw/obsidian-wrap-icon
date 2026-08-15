@@ -1,10 +1,19 @@
 import { Editor, EditorPosition, EditorSuggest, EditorSuggestContext, TFile } from 'obsidian'
 import type WrapperIconPlugin from './main'
+import type { IconSet } from './icons'
 export interface IconSuggestion {
   fullName: string
 }
+interface IconNameEntry {
+  fullName: string
+  lower: string
+}
 export class IconSuggest extends EditorSuggest<IconSuggestion> {
   limit = 20
+  // Pre-built index of every icon name, rebuilt lazily whenever the icon sets
+  // array is replaced (load / reload / download / delete). This avoids
+  // allocating and lowercasing the full name list on every keystroke.
+  private index: { sets: IconSet[]; entries: IconNameEntry[] } | null = null
   constructor(private readonly plugin: WrapperIconPlugin) {
     super(plugin.app)
   }
@@ -21,12 +30,25 @@ export class IconSuggest extends EditorSuggest<IconSuggestion> {
   }
   getSuggestions(context: EditorSuggestContext): IconSuggestion[] {
     const query = context.query.toLowerCase()
-    return this.plugin.iconSets
-      .flatMap((set) =>
-        Object.keys(set.icons).map((name) => ({ fullName: `${set.prefix}:${name}` })),
-      )
-      .filter((item) => item.fullName.toLowerCase().includes(query))
+    return this.getEntries()
+      .filter((entry) => entry.lower.includes(query))
       .slice(0, this.limit)
+      .map((entry) => ({ fullName: entry.fullName }))
+  }
+  private getEntries(): IconNameEntry[] {
+    if (!this.index || this.index.sets !== this.plugin.iconSets) {
+      const sets = this.plugin.iconSets
+      this.index = {
+        sets,
+        entries: sets.flatMap((set) =>
+          Object.keys(set.icons).map((name) => {
+            const fullName = `${set.prefix}:${name}`
+            return { fullName, lower: fullName.toLowerCase() }
+          }),
+        ),
+      }
+    }
+    return this.index.entries
   }
   renderSuggestion(value: IconSuggestion, el: HTMLElement): void {
     el.setText(value.fullName)
