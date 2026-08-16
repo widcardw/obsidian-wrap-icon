@@ -83,6 +83,7 @@ Example in GIF:
 | Setting | Description |
 | --- | --- |
 | Delimiter | The character between the icon name and the custom text (default `;`). |
+| Suggestion debounce | The delay (in milliseconds) before the autocomplete suggestions appear. |
 | Download icon set | Opens the Iconify collection downloader. |
 | Edit styles.css | Opens the plugin stylesheet (desktop only) so you can customize icon size, color, and layout. |
 
@@ -117,7 +118,7 @@ This plugin is built with TypeScript and esbuild. Requires Node.js 18+.
 npm install       # install dependencies
 npm run dev       # compile in watch mode
 npm run build     # type-check (tsc) and produce a production build in main.js
-npm run lint      # ESLint check
+npm run lint      # oxlint check
 npm run format    # format source files with oxfmt
 ```
 
