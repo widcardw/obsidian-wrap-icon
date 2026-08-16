@@ -55,7 +55,9 @@ export async function saveIconSet(
   const path = pluginAssetsPath(plugin, `${set.prefix}.json`)
   await plugin.app.vault.adapter.write(path, JSON.stringify(set))
 }
-export async function loadIconSets(plugin: WrapperIconPlugin): Promise<IconSet[]> {
+export async function loadIconSets(
+  plugin: WrapperIconPlugin,
+): Promise<IconSet[]> {
   const folder = pluginAssetsPath(plugin)
   if (!(await plugin.app.vault.adapter.exists(folder))) return []
   const sets: IconSet[] = []

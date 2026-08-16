@@ -1,4 +1,5 @@
 import {
+  debounce,
   Editor,
   EditorPosition,
   EditorSuggest,
@@ -34,17 +35,60 @@ export class IconSuggest extends EditorSuggest<IconSuggestion> {
       query: match[1] || '',
     }
   }
-  getSuggestions(context: EditorSuggestContext): IconSuggestion[] {
-    const query = context.query.toLowerCase()
+  getSuggestions(context: EditorSuggestContext): Promise<IconSuggestion[]> {
+    return new Promise((resolve) => {
+      const ms = this.plugin.settings.suggestDebounce
+      if (ms > 0) {
+        this.ensureDebouncedSearch(ms)(context.query, resolve)
+      } else {
+        resolve(this.search(context.query))
+      }
+    })
+  }
+  // Debounce the actual search so that fast typing renders the suggestion list
+  // once, instead of rebuilding the whole list (with icon previews) on every
+  // keystroke. The interval follows the plugin setting; 0 disables debouncing.
+  private debounceMs = 0
+  private debouncedSearch:
+    | ((
+        query: string,
+        resolve: (suggestions: IconSuggestion[]) => void,
+      ) => void)
+    | null = null
+  private ensureDebouncedSearch(
+    ms: number,
+  ): (query: string, resolve: (suggestions: IconSuggestion[]) => void) => void {
+    if (!this.debouncedSearch || this.debounceMs !== ms) {
+      this.debounceMs = ms
+      this.debouncedSearch = debounce(
+        (query: string, resolve: (suggestions: IconSuggestion[]) => void) => {
+          resolve(this.search(query))
+        },
+        ms,
+        true,
+      )
+    }
+    return this.debouncedSearch
+  }
+  private search(query: string): IconSuggestion[] {
+    const tokens = query
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter(Boolean)
+    if (tokens.length === 0) return []
     const entries = this.getEntries()
     const result: IconSuggestion[] = []
-    // Stop scanning as soon as the limit is reached, instead of filtering the
-    // whole index of icon names on every keystroke.
     for (const entry of entries) {
-      if (entry.lower.includes(query)) {
+      if (tokens.every((token) => entry.lower.includes(token))) {
         result.push({ fullName: entry.fullName })
         if (result.length >= this.limit) break
       }
+    }
+    // Lightweight relevance: names that start with a token rank first.
+    if (result.length > 1) {
+      const score = (name: string) =>
+        tokens.filter((token) => name.startsWith(token)).length
+      result.sort((a, b) => score(b.fullName) - score(a.fullName))
     }
     return result
   }

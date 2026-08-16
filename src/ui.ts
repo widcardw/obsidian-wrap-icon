@@ -1,4 +1,4 @@
-import { Modal, Notice, Setting } from 'obsidian'
+import { debounce, Modal, Notice, Setting } from 'obsidian'
 import type WrapperIconPlugin from './main'
 import {
   deleteIconSet,
@@ -50,7 +50,13 @@ export class DownloaderModal extends Modal {
   private selected: IconCollection | null = null
   private resultsEl!: HTMLElement
   private statusEl!: HTMLElement
-  private searchTimer: number | undefined
+  private readonly debouncedSearch = debounce(
+    () => {
+      void this.refreshResults()
+    },
+    300,
+    true,
+  )
 
   constructor(private readonly plugin: WrapperIconPlugin) {
     super(plugin.app)
@@ -91,11 +97,7 @@ export class DownloaderModal extends Modal {
     new Setting(contentEl).setName('Search collections').addText((text) =>
       text.setPlaceholder('Material design icons').onChange((value) => {
         this.query = value
-        if (this.searchTimer !== undefined)
-          window.clearTimeout(this.searchTimer)
-        this.searchTimer = window.setTimeout(() => {
-          void this.refreshResults()
-        }, 300)
+        this.debouncedSearch()
       }),
     )
     this.statusEl = contentEl.createDiv({
@@ -125,11 +127,7 @@ export class DownloaderModal extends Modal {
           }
           button.setDisabled(true)
           try {
-            await downloadIconSet(
-              this.plugin,
-              this.selected.prefix,
-              this.icons,
-            )
+            await downloadIconSet(this.plugin, this.selected.prefix, this.icons)
             this.plugin.iconSets = await loadIconSets(this.plugin)
             this.close()
           } catch (error) {
