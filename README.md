@@ -51,6 +51,10 @@ Examples:
 
 > ⚠️ The `<icon-set>:<icon-name>` prefix is required — the plugin only renders icons that are present in your locally downloaded sets.
 
+Example in GIF:
+
+![Demo GIF](./showcase/demo01.gif)
+
 ### In the editor
 
 - **Live Preview**: icons are rendered inline as you type. Click a rendered icon to select and edit its source.
@@ -69,6 +73,10 @@ Icon sets are downloaded from the official `@iconify-json` packages (via jsDeliv
 The set is saved to `.obsidian/plugins/wrapper-icon/assets/<prefix>.json` and is available immediately, offline.
 
 To add icons to an already downloaded set, delete the set from the downloader (or the assets folder) and download it again.
+
+Example in GIF:
+
+![Demo GIF](./showcase/demo02-download.gif)
 
 ## Settings
 
