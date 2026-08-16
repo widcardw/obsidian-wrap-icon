@@ -2,6 +2,8 @@
 
 Render [Iconify](https://iconify.design/) icons with custom inline text in your notes, using locally downloaded icon sets — no internet connection needed once the icons are saved.
 
+![Demo](./showcase/demo00.png)
+
 ```
 `/ico mdi:home;Home`
 ```
