@@ -1,4 +1,10 @@
-import { Editor, EditorPosition, EditorSuggest, EditorSuggestContext, TFile } from 'obsidian'
+import {
+  Editor,
+  EditorPosition,
+  EditorSuggest,
+  EditorSuggestContext,
+  TFile,
+} from 'obsidian'
 import type WrapperIconPlugin from './main'
 import { createIconSvg, findIcon, IconSet } from './icons'
 export interface IconSuggestion {

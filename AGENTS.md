@@ -35,9 +35,9 @@ npm run build
 
 ## Linting
 
-- ESLint is preconfigured with `eslint-plugin-obsidianmd` for Obsidian-specific rules.
-- Run `npm run lint` to lint the project.
-- A GitHub Action automatically lints every commit on all branches.
+- `oxlint` is used for linting and `oxfmt` for formatting (see `.oxlintrc.json` / `.oxfmtrc.json`).
+- Run `npm run lint` to lint the project, `npm run format` to format, `npm run format:check` to verify formatting.
+- A GitHub Action automatically lints and checks formatting on every commit on all branches.
 
 ## File & folder conventions
 

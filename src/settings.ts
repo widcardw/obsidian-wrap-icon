@@ -20,10 +20,12 @@ export class WrapperIconSettingTab extends PluginSettingTab {
       .setName('Delimiter')
       .setDesc('The character between the icon name and custom text.')
       .addText((text) =>
-        text.setValue(this.plugin.settings.delimiter).onChange(async (value) => {
-          this.plugin.settings.delimiter = value || ';'
-          await this.plugin.saveSettings()
-        }),
+        text
+          .setValue(this.plugin.settings.delimiter)
+          .onChange(async (value) => {
+            this.plugin.settings.delimiter = value || ';'
+            await this.plugin.saveSettings()
+          }),
       )
     new Setting(containerEl)
       .setName('Download icon set')
@@ -38,7 +40,9 @@ export class WrapperIconSettingTab extends PluginSettingTab {
       .setName('Edit styles.css')
       .setDesc('Open the plugin stylesheet in Obsidian.')
       .addButton((button) =>
-        button.setButtonText('Open CSS').onClick(() => this.plugin.openStylesheet()),
+        button
+          .setButtonText('Open CSS')
+          .onClick(() => this.plugin.openStylesheet()),
       )
   }
 }

@@ -1,5 +1,9 @@
 import { FileSystemAdapter, Notice, Plugin } from 'obsidian'
-import { DEFAULT_SETTINGS, WrapperIconSettings, WrapperIconSettingTab } from './settings'
+import {
+  DEFAULT_SETTINGS,
+  WrapperIconSettings,
+  WrapperIconSettingTab,
+} from './settings'
 import { createIconSvg, findIcon, IconSet, loadIconSets } from './icons'
 import { DownloaderModal } from './ui'
 import { IconSuggest } from './suggest'
@@ -14,16 +18,18 @@ export default class WrapperIconPlugin extends Plugin {
       DEFAULT_SETTINGS,
       (await this.loadData()) as Partial<WrapperIconSettings>,
     )
-    this.iconSets = await loadIconSets(this.app)
+    this.iconSets = await loadIconSets(this)
     this.addSettingTab(new WrapperIconSettingTab(this.app, this))
     this.registerEditorSuggest(new IconSuggest(this))
     this.registerEditorExtension(createLivePreviewExtension(this))
-    this.registerMarkdownPostProcessor((element: HTMLElement) => this.renderInlineIcons(element))
+    this.registerMarkdownPostProcessor((element: HTMLElement) =>
+      this.renderInlineIcons(element),
+    )
     this.addCommand({
       id: 'reload-local-icon-sets',
       name: 'Reload local icon sets',
       callback: async () => {
-        this.iconSets = await loadIconSets(this.app)
+        this.iconSets = await loadIconSets(this)
       },
     })
     this.addCommand({
@@ -48,7 +54,9 @@ export default class WrapperIconPlugin extends Plugin {
     }
     const cssPath = `${adapter.getBasePath()}/${this.app.vault.configDir}/plugins/${this.manifest.id}/styles.css`
     try {
-      const requireFn = (window as unknown as { require?: (id: string) => unknown }).require
+      const requireFn = (
+        window as unknown as { require?: (id: string) => unknown }
+      ).require
       if (!requireFn) throw new Error('Electron is unavailable')
       const electronModule = requireFn('electron') as {
         shell?: { openPath?: (path: string) => Promise<string> }
@@ -61,9 +69,15 @@ export default class WrapperIconPlugin extends Plugin {
   }
   private renderInlineIcons(element: HTMLElement): void {
     for (const code of Array.from(element.querySelectorAll('code'))) {
-      const escapedDelimiter = this.settings.delimiter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const escapedDelimiter = this.settings.delimiter.replace(
+        /[.*+?^${}()|[\]\\]/g,
+        '\\$&',
+      )
       const match = code.textContent?.match(
-        new RegExp(`^\\/ico\\s+([^\\s${escapedDelimiter}\`]+)${escapedDelimiter}(.*)$`, 's'),
+        new RegExp(
+          `^\\/ico\\s+([^\\s${escapedDelimiter}\`]+)${escapedDelimiter}(.*)$`,
+          's',
+        ),
       )
       if (!match) continue
       const found = findIcon(this.iconSets, match[1] || '')

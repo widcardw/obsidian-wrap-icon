@@ -20,7 +20,10 @@ class IconPathModal extends Modal {
     const { contentEl } = this
     contentEl.empty()
     new Setting(contentEl).setName('Icon set location').setHeading()
-    contentEl.createEl('p', { text: this.path, cls: 'plug-wrap-icon-path-value' })
+    contentEl.createEl('p', {
+      text: this.path,
+      cls: 'plug-wrap-icon-path-value',
+    })
     new Setting(contentEl)
       .addButton((button) =>
         button
@@ -35,7 +38,9 @@ class IconPathModal extends Modal {
             }
           }),
       )
-      .addButton((button) => button.setButtonText('Close').onClick(() => this.close()))
+      .addButton((button) =>
+        button.setButtonText('Close').onClick(() => this.close()),
+      )
   }
 }
 
@@ -70,28 +75,35 @@ export class DownloaderModal extends Modal {
       pathEl.addEventListener('click', () =>
         new IconPathModal(
           this.plugin.app,
-          getIconSetDisplayPath(this.plugin.app, set.prefix),
+          getIconSetDisplayPath(this.plugin, set.prefix),
         ).open(),
       )
-      row.createEl('button', { text: 'Delete' }).addEventListener('click', () => {
-        void (async () => {
-          await deleteIconSet(this.plugin.app, set.prefix)
-          this.plugin.iconSets = await loadIconSets(this.plugin.app)
-          row.remove()
-        })()
-      })
+      row
+        .createEl('button', { text: 'Delete' })
+        .addEventListener('click', () => {
+          void (async () => {
+            await deleteIconSet(this.plugin, set.prefix)
+            this.plugin.iconSets = await loadIconSets(this.plugin)
+            row.remove()
+          })()
+        })
     }
     new Setting(contentEl).setName('Search collections').addText((text) =>
       text.setPlaceholder('Material design icons').onChange((value) => {
         this.query = value
-        if (this.searchTimer !== undefined) window.clearTimeout(this.searchTimer)
+        if (this.searchTimer !== undefined)
+          window.clearTimeout(this.searchTimer)
         this.searchTimer = window.setTimeout(() => {
           void this.refreshResults()
         }, 300)
       }),
     )
-    this.statusEl = contentEl.createDiv({ cls: 'plug-wrap-icon-download-status' })
-    this.resultsEl = contentEl.createDiv({ cls: 'plug-wrap-icon-collection-results' })
+    this.statusEl = contentEl.createDiv({
+      cls: 'plug-wrap-icon-download-status',
+    })
+    this.resultsEl = contentEl.createDiv({
+      cls: 'plug-wrap-icon-collection-results',
+    })
     new Setting(contentEl)
       .setName('Icon names')
       .setDesc(
@@ -113,8 +125,12 @@ export class DownloaderModal extends Modal {
           }
           button.setDisabled(true)
           try {
-            await downloadIconSet(this.plugin.app, this.selected.prefix, this.icons)
-            this.plugin.iconSets = await loadIconSets(this.plugin.app)
+            await downloadIconSet(
+              this.plugin,
+              this.selected.prefix,
+              this.icons,
+            )
+            this.plugin.iconSets = await loadIconSets(this.plugin)
             this.close()
           } catch (error) {
             new Notice(error instanceof Error ? error.message : String(error))
@@ -134,7 +150,9 @@ export class DownloaderModal extends Modal {
       const results = (await searchCollections(this.query)).slice(0, 30)
       this.statusEl.setText(`${results.length} collection(s) found`)
       for (const collection of results) {
-        const row = this.resultsEl.createDiv({ cls: 'plug-wrap-icon-collection-row' })
+        const row = this.resultsEl.createDiv({
+          cls: 'plug-wrap-icon-collection-row',
+        })
         row.createEl('strong', { text: collection.name })
         row.createSpan({
           text: ` ${collection.prefix}${collection.total ? ` · ${collection.total} icons` : ''}`,

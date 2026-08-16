@@ -1,4 +1,10 @@
-import { EditorView, Decoration, ViewPlugin, ViewUpdate, WidgetType } from '@codemirror/view'
+import {
+  EditorView,
+  Decoration,
+  ViewPlugin,
+  ViewUpdate,
+  WidgetType,
+} from '@codemirror/view'
 import { RangeSetBuilder } from '@codemirror/state'
 import { syntaxTree } from '@codemirror/language'
 import type WrapperIconPlugin from './main'
@@ -21,7 +27,9 @@ class InlineIconWidget extends WidgetType {
     wrapper.addEventListener('mousedown', (event) => {
       event.preventDefault()
       this.activate()
-      view.dispatch({ selection: { anchor: this.sourceFrom, head: this.sourceTo } })
+      view.dispatch({
+        selection: { anchor: this.sourceFrom, head: this.sourceTo },
+      })
     })
     wrapper.appendChild(createIconSvg(this.icon, this.set))
     const label = createSpan()
@@ -66,7 +74,11 @@ class LivePreviewDecorations {
         to: update.changes.mapPos(this.editingRange.to, -1),
       }
     }
-    if (update.selectionSet && this.editingRange && !this.selectionIsInEditingRange()) {
+    if (
+      update.selectionSet &&
+      this.editingRange &&
+      !this.selectionIsInEditingRange()
+    ) {
       this.editingRange = null
     }
     if (update.docChanged || update.viewportChanged || update.selectionSet) {
@@ -93,7 +105,11 @@ class LivePreviewDecorations {
     // Match the icon syntax inside a single inline-code node (its text includes
     // the wrapping backticks after the range is expanded below).
     const pattern = new RegExp(
-      '^`\\/ico\\s+([^\\s' + escapedDelimiter + '`]+)' + escapedDelimiter + '([^`]*)`$',
+      '^`\\/ico\\s+([^\\s' +
+        escapedDelimiter +
+        '`]+)' +
+        escapedDelimiter +
+        '([^`]*)`$',
     )
     // Locate icons through the syntax tree instead of scanning raw text: the
     // tree knows the real inline-code context, so code blocks, escaped
@@ -144,13 +160,15 @@ class LivePreviewDecorations {
     this.decorations = builder.finish()
   }
   private isActiveRange(start: number, end: number): boolean {
-    if (this.editingRange?.from === start && this.editingRange.to === end) return true
+    if (this.editingRange?.from === start && this.editingRange.to === end)
+      return true
     for (const range of this.view.state.selection.ranges) {
       // Only a collapsed cursor inside the icon source counts as editing it.
       // A non-collapsed selection overlapping the icon keeps the widget
       // visible (matching CodeMirror's default behavior for replace
       // decorations), otherwise selecting text makes icons vanish.
-      if (range.from === range.to && range.from > start && range.from < end) return true
+      if (range.from === range.to && range.from > start && range.from < end)
+        return true
     }
     return false
   }
@@ -158,9 +176,14 @@ class LivePreviewDecorations {
     if (!this.editingRange) return false
     return this.view.state.selection.ranges.some((range) => {
       if (range.from === range.to) {
-        return range.from > this.editingRange!.from && range.from < this.editingRange!.to
+        return (
+          range.from > this.editingRange!.from &&
+          range.from < this.editingRange!.to
+        )
       }
-      return range.from < this.editingRange!.to && range.to > this.editingRange!.from
+      return (
+        range.from < this.editingRange!.to && range.to > this.editingRange!.from
+      )
     })
   }
 }

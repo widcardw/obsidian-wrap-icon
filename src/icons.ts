@@ -1,4 +1,5 @@
-import { App, FileSystemAdapter, Notice, requestUrl } from 'obsidian'
+import { FileSystemAdapter, Notice, requestUrl } from 'obsidian'
+import type WrapperIconPlugin from './main'
 
 export interface IconData {
   body: string
@@ -32,57 +33,78 @@ export interface IconCollection {
   license?: { title?: string; spdx?: string }
 }
 const assetsFolder = 'assets'
-const pluginId = 'wrapper-icon'
 
-function pluginAssetsPath(app: App, fileName = ''): string {
-  return `${app.vault.configDir}/plugins/${pluginId}/${assetsFolder}${fileName ? `/${fileName}` : ''}`
+function pluginAssetsPath(plugin: WrapperIconPlugin, fileName = ''): string {
+  return `${plugin.app.vault.configDir}/plugins/${plugin.manifest.id}/${assetsFolder}${fileName ? `/${fileName}` : ''}`
 }
 
-function getPluginFolderPath(app: App): string {
-  return `${app.vault.configDir}/plugins/${pluginId}`
+function getPluginFolderPath(plugin: WrapperIconPlugin): string {
+  return `${plugin.app.vault.configDir}/plugins/${plugin.manifest.id}`
 }
 
-export async function ensureAssets(app: App): Promise<void> {
-  const adapter = app.vault.adapter
-  const folder = pluginAssetsPath(app)
+export async function ensureAssets(plugin: WrapperIconPlugin): Promise<void> {
+  const adapter = plugin.app.vault.adapter
+  const folder = pluginAssetsPath(plugin)
   if (!(await adapter.exists(folder))) await adapter.mkdir(folder)
 }
-export async function saveIconSet(app: App, set: IconSet): Promise<void> {
-  await ensureAssets(app)
-  const path = pluginAssetsPath(app, `${set.prefix}.json`)
-  await app.vault.adapter.write(path, JSON.stringify(set))
+export async function saveIconSet(
+  plugin: WrapperIconPlugin,
+  set: IconSet,
+): Promise<void> {
+  await ensureAssets(plugin)
+  const path = pluginAssetsPath(plugin, `${set.prefix}.json`)
+  await plugin.app.vault.adapter.write(path, JSON.stringify(set))
 }
-export async function loadIconSets(app: App): Promise<IconSet[]> {
-  const folder = pluginAssetsPath(app)
-  if (!(await app.vault.adapter.exists(folder))) return []
+export async function loadIconSets(plugin: WrapperIconPlugin): Promise<IconSet[]> {
+  const folder = pluginAssetsPath(plugin)
+  if (!(await plugin.app.vault.adapter.exists(folder))) return []
   const sets: IconSet[] = []
-  const listed = await app.vault.adapter.list(folder)
+  const listed = await plugin.app.vault.adapter.list(folder)
   for (const path of listed.files) {
     if (!path.endsWith('.json')) continue
     try {
-      sets.push(JSON.parse(await app.vault.adapter.read(path)) as IconSet)
+      sets.push(
+        JSON.parse(await plugin.app.vault.adapter.read(path)) as IconSet,
+      )
     } catch {
       /* ignore malformed files */
     }
   }
   return sets
 }
-export async function deleteIconSet(app: App, prefix: string): Promise<void> {
-  const path = pluginAssetsPath(app, `${prefix}.json`)
-  if (await app.vault.adapter.exists(path)) await app.vault.adapter.remove(path)
+export async function deleteIconSet(
+  plugin: WrapperIconPlugin,
+  prefix: string,
+): Promise<void> {
+  const path = pluginAssetsPath(plugin, `${prefix}.json`)
+  if (await plugin.app.vault.adapter.exists(path))
+    await plugin.app.vault.adapter.remove(path)
 }
-export function getIconSetPath(app: App, prefix: string): string {
-  return pluginAssetsPath(app, `${prefix}.json`)
+export function getIconSetPath(
+  plugin: WrapperIconPlugin,
+  prefix: string,
+): string {
+  return pluginAssetsPath(plugin, `${prefix}.json`)
 }
-export function getIconSetDisplayPath(app: App, prefix: string): string {
-  const adapter = app.vault.adapter as FileSystemAdapter
+export function getIconSetDisplayPath(
+  plugin: WrapperIconPlugin,
+  prefix: string,
+): string {
+  const adapter = plugin.app.vault.adapter as FileSystemAdapter
   if (typeof adapter.getBasePath === 'function')
-    return `${adapter.getBasePath()}/${getPluginFolderPath(app)}/${assetsFolder}/${prefix}.json`
-  return getIconSetPath(app, prefix)
+    return `${adapter.getBasePath()}/${getPluginFolderPath(plugin)}/${assetsFolder}/${prefix}.json`
+  return getIconSetPath(plugin, prefix)
 }
-export async function searchCollections(query: string): Promise<IconCollection[]> {
-  const response = await requestUrl({ url: 'https://api.iconify.design/collections' })
-  const collections = response.json as Record<string, Omit<IconCollection, 'prefix'>>
+export async function searchCollections(
+  query: string,
+): Promise<IconCollection[]> {
+  const response = await requestUrl({
+    url: 'https://api.iconify.design/collections',
+  })
+  const collections = response.json as Record<
+    string,
+    Omit<IconCollection, 'prefix'>
+  >
   const normalized = query.trim().toLowerCase()
   return Object.entries(collections)
     .map(([prefix, collection]) => ({ prefix, ...collection }))
@@ -96,7 +118,11 @@ export async function searchCollections(query: string): Promise<IconCollection[]
     .sort((a, b) => a.name.localeCompare(b.name))
 }
 
-export async function downloadIconSet(app: App, prefix: string, icons: string): Promise<void> {
+export async function downloadIconSet(
+  plugin: WrapperIconPlugin,
+  prefix: string,
+  icons: string,
+): Promise<void> {
   const names = icons
     .split(',')
     .map((name) => name.trim())
@@ -113,7 +139,8 @@ export async function downloadIconSet(app: App, prefix: string, icons: string): 
   )
   const selected: Record<string, IconData> = {}
   if (selectedNames.length) {
-    for (const name of selectedNames) if (allIcons[name]) selected[name] = allIcons[name]
+    for (const name of selectedNames)
+      if (allIcons[name]) selected[name] = allIcons[name]
   } else {
     Object.assign(selected, allIcons)
   }
@@ -123,16 +150,20 @@ export async function downloadIconSet(app: App, prefix: string, icons: string): 
       `No matching icons found in “${prefix}”. Examples from this collection: ${examples}`,
     )
   }
-  await saveIconSet(app, {
+  await saveIconSet(plugin, {
     prefix: raw.prefix || prefix,
     width: raw.width,
     height: raw.height,
     icons: selected,
   })
-  new Notice(`Downloaded ${Object.keys(selected).length} icon(s) from ${prefix}.`)
+  new Notice(
+    `Downloaded ${Object.keys(selected).length} icon(s) from ${prefix}.`,
+  )
 }
 
-async function downloadIconifyJsonPackage(prefix: string): Promise<IconifyResponse> {
+async function downloadIconifyJsonPackage(
+  prefix: string,
+): Promise<IconifyResponse> {
   const packageName = encodeURIComponent(prefix)
   const urls = [
     `https://cdn.jsdelivr.net/npm/@iconify-json/${packageName}@latest/icons.json`,
@@ -146,10 +177,14 @@ async function downloadIconifyJsonPackage(prefix: string): Promise<IconifyRespon
       if (result.icons && Object.keys(result.icons).length > 0) return result
       failures.push(`${url} returned no icons`)
     } catch (error) {
-      failures.push(`${url}: ${error instanceof Error ? error.message : String(error)}`)
+      failures.push(
+        `${url}: ${error instanceof Error ? error.message : String(error)}`,
+      )
     }
   }
-  throw new Error(`Could not download @iconify-json/${prefix}/icons.json. ${failures.join(' | ')}`)
+  throw new Error(
+    `Could not download @iconify-json/${prefix}/icons.json. ${failures.join(' | ')}`,
+  )
 }
 
 function resolveAliases(
