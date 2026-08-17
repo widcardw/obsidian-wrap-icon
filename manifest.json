@@ -1,7 +1,7 @@
 {
 	"id": "wrapper-icon",
 	"name": "Wrapper Icon",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"minAppVersion": "1.4.0",
 	"description": "Use locally downloaded Iconify icons with custom inline text.",
 	"author": "widcardw",
