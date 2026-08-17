@@ -4,6 +4,7 @@ import {
   deleteIconSet,
   downloadIconSet,
   getIconSetDisplayPath,
+  getIconSetPath,
   IconCollection,
   loadIconSets,
   searchCollections,
@@ -50,6 +51,9 @@ export class DownloaderModal extends Modal {
   private selected: IconCollection | null = null
   private resultsEl!: HTMLElement
   private statusEl!: HTMLElement
+  private offlineEl!: HTMLElement
+  private offlineStatusEl!: HTMLElement
+  private manualPrefix = ''
   private readonly debouncedSearch = debounce(
     () => {
       void this.refreshResults()
@@ -106,6 +110,58 @@ export class DownloaderModal extends Modal {
     this.resultsEl = contentEl.createDiv({
       cls: 'plug-wrap-icon-collection-results',
     })
+    this.offlineEl = contentEl.createDiv({ cls: 'plug-wrap-icon-offline' })
+    this.offlineEl.style.display = 'none'
+    this.offlineStatusEl = this.offlineEl.createEl('p', {
+      cls: 'plug-wrap-icon-offline-status',
+    })
+    this.offlineEl.createEl('strong', {
+      text: 'Network unavailable',
+    })
+    this.offlineEl.createEl('p', {
+      text: 'Obsidian cannot reach the network, but you can still download icon sets with your browser and load them manually.',
+    })
+    new Setting(this.offlineEl)
+      .setName('Browse icon sets')
+      .setDesc('Open the Iconify collection browser in your default browser.')
+      .addButton((button) =>
+        button
+          .setButtonText('Open Iconify')
+          .onClick(() => {
+            window.open('https://icon-sets.iconify.design/', '_blank')
+          }),
+      )
+    new Setting(this.offlineEl)
+      .setName('Icon set ID')
+      .setDesc(
+        'Paste the collection prefix (e.g. "mdi"), then open its download URL.',
+      )
+      .addText((text) =>
+        text.setPlaceholder('mdi').onChange((value) => {
+          this.manualPrefix = value.trim()
+        }),
+      )
+      .addButton((button) =>
+        button
+          .setButtonText('Open download URL')
+          .onClick(() => {
+            if (!this.manualPrefix) {
+              new Notice('Enter an icon set ID first.')
+              return
+            }
+            const url = `https://cdn.jsdelivr.net/npm/@iconify-json/${encodeURIComponent(this.manualPrefix)}@latest/icons.json`
+            window.open(url, '_blank')
+          }),
+      )
+    const offlineHint = this.offlineEl.createEl('p')
+    offlineHint.appendText('Save the downloaded file as ')
+    offlineHint.createSpan({
+      cls: 'plug-wrap-icon-offline-path',
+      text: getIconSetPath(this.plugin, '<prefix>'),
+    })
+    offlineHint.appendText(
+      ', then run the "Reload local icon sets" command.',
+    )
     new Setting(contentEl)
       .setName('Icon names')
       .setDesc(
@@ -131,7 +187,10 @@ export class DownloaderModal extends Modal {
             this.plugin.iconSets = await loadIconSets(this.plugin)
             this.close()
           } catch (error) {
-            new Notice(error instanceof Error ? error.message : String(error))
+            const message =
+              error instanceof Error ? error.message : String(error)
+            new Notice(message)
+            this.showOffline(message)
           } finally {
             button.setDisabled(false)
           }
@@ -147,6 +206,7 @@ export class DownloaderModal extends Modal {
     try {
       const results = (await searchCollections(this.query)).slice(0, 30)
       this.statusEl.setText(`${results.length} collection(s) found`)
+      this.hideOffline()
       for (const collection of results) {
         const row = this.resultsEl.createDiv({
           cls: 'plug-wrap-icon-collection-row',
@@ -164,9 +224,18 @@ export class DownloaderModal extends Modal {
         })
       }
     } catch (error) {
-      this.statusEl.setText(
-        `Search failed: ${error instanceof Error ? error.message : String(error)}`,
-      )
+      const message = error instanceof Error ? error.message : String(error)
+      this.statusEl.setText(`Search failed: ${message}`)
+      this.showOffline(message)
     }
+  }
+  private showOffline(error: string): void {
+    if (!this.offlineEl) return
+    this.offlineStatusEl.setText(error)
+    this.offlineEl.style.display = ''
+  }
+  private hideOffline(): void {
+    if (!this.offlineEl) return
+    this.offlineEl.style.display = 'none'
   }
 }
