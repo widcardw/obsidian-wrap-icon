@@ -125,11 +125,9 @@ export class DownloaderModal extends Modal {
       .setName('Browse icon sets')
       .setDesc('Open the Iconify collection browser in your default browser.')
       .addButton((button) =>
-        button
-          .setButtonText('Open Iconify')
-          .onClick(() => {
-            window.open('https://icon-sets.iconify.design/', '_blank')
-          }),
+        button.setButtonText('Open Iconify').onClick(() => {
+          window.open('https://icon-sets.iconify.design/', '_blank')
+        }),
       )
     new Setting(this.offlineEl)
       .setName('Icon set ID')
@@ -142,16 +140,14 @@ export class DownloaderModal extends Modal {
         }),
       )
       .addButton((button) =>
-        button
-          .setButtonText('Open download URL')
-          .onClick(() => {
-            if (!this.manualPrefix) {
-              new Notice('Enter an icon set ID first.')
-              return
-            }
-            const url = `https://cdn.jsdelivr.net/npm/@iconify-json/${encodeURIComponent(this.manualPrefix)}@latest/icons.json`
-            window.open(url, '_blank')
-          }),
+        button.setButtonText('Open download URL').onClick(() => {
+          if (!this.manualPrefix) {
+            new Notice('Enter an icon set ID first.')
+            return
+          }
+          const url = `https://cdn.jsdelivr.net/npm/@iconify-json/${encodeURIComponent(this.manualPrefix)}@latest/icons.json`
+          window.open(url, '_blank')
+        }),
       )
     const offlineHint = this.offlineEl.createEl('p')
     offlineHint.appendText('Save the downloaded file as ')
@@ -159,9 +155,7 @@ export class DownloaderModal extends Modal {
       cls: 'plug-wrap-icon-offline-path',
       text: getIconSetPath(this.plugin, '<prefix>'),
     })
-    offlineHint.appendText(
-      ', then run the "Reload local icon sets" command.',
-    )
+    offlineHint.appendText(', then run the "Reload local icon sets" command.')
     new Setting(contentEl)
       .setName('Icon names')
       .setDesc(
